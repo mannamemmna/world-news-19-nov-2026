@@ -1,3 +1,7 @@
+[![make.fun · news-image-20261119](https://make.fun/badge/news-image-20261119.svg)](https://make.fun/bounty/news-image-20261119?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261119)
+[![rank](https://make.fun/badge/news-image-20261119/mannamemmna/world-news-19-nov-2026/rank.svg)](https://make.fun/bounty/news-image-20261119/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261119)
+[![reward](https://make.fun/badge/news-image-20261119/mannamemmna/world-news-19-nov-2026/reward.svg)](https://make.fun/bounty/news-image-20261119&utm_source=github&utm_medium=readme&utm_campaign=news-image-20261119)
+
 # World News — 19 November 2026
 
 A single 1024×1024 picture summarising the world's news for Thursday, 19 November 2026 as a dark-themed, colour-coded digest. The featured panel covers the first trilateral summit between Trump, Xi and Putin, held in Shenzhen on the sidelines of APEC with nuclear arms, energy and the wars in Ukraine and Iran on the table, illustrated with a Washington–Shenzhen map. The remaining panels: Anthropic pricing at $83 a share in the biggest IPO on record after raising more than $100 billion; the worldwide launch of Grand Theft Auto VI after a thirteen-year wait; the US and Iran trading strikes and ending a two-month lull; the UN court finding Myanmar guilty of genocide against the Rohingya and ordering reparations; and Cyclone Akvan nearing India's eastern coast, with Odisha evacuating 50,000 people.
