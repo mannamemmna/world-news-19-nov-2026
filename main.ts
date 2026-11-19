@@ -44,30 +44,36 @@ function walkChunks(bytes: Buffer): string[] {
   return types;
 }
 
+// Full gate check in one place: size, signature, chunk table, header, completeness.
+// Bails via reject() on any violation; on success returns the parsed IHDR facts.
+function validatePng(buffer: Buffer): { width: number; height: number; bitDepth: number; colorType: number; chunkCount: number } {
+  if (buffer.length > MAX_FILE_BYTES) reject(`${buffer.length} bytes exceeds the ${MAX_FILE_BYTES} byte limit`);
+  if (!buffer.subarray(0, SIGNATURE.length).equals(SIGNATURE)) reject('first bytes are not the PNG signature 89 50 4E 47 0D 0A 1A 0A');
+
+  const chunks = walkChunks(buffer);
+  if (chunks[0] !== 'IHDR') reject(`file opens with ${chunks[0]}, not IHDR`);
+  if (chunks[chunks.length - 1] !== 'IEND') reject(`file ends with ${chunks[chunks.length - 1]}, not IEND`);
+  if (!buffer.subarray(buffer.length - IEND_CHUNK.length).equals(IEND_CHUNK)) reject('closing IEND chunk is malformed');
+
+  const width = buffer.readUInt32BE(16);
+  const height = buffer.readUInt32BE(20);
+  const bitDepth = buffer[24];
+  const colorType = buffer[25];
+  if (width === 0 || height === 0) reject('IHDR reports a zero-width or zero-height image');
+  if (width > MAX_EDGE_PX || height > MAX_EDGE_PX) reject(`${width}x${height} exceeds the ${MAX_EDGE_PX}x${MAX_EDGE_PX} gate limit`);
+
+  return { width, height, bitDepth, colorType, chunkCount: chunks.length };
+}
+
 const source = new URL('./entry.png', import.meta.url);
 const bytes = readFileSync(source);
-
-// --- validation: size, signature, header, completeness -------------------
-if (bytes.length > MAX_FILE_BYTES) reject(`${bytes.length} bytes exceeds the ${MAX_FILE_BYTES} byte limit`);
-if (!bytes.subarray(0, SIGNATURE.length).equals(SIGNATURE)) reject('first bytes are not the PNG signature 89 50 4E 47 0D 0A 1A 0A');
-
-const chunks = walkChunks(bytes);
-if (chunks[0] !== 'IHDR') reject(`file opens with ${chunks[0]}, not IHDR`);
-if (chunks[chunks.length - 1] !== 'IEND') reject(`file ends with ${chunks[chunks.length - 1]}, not IEND`);
-if (!bytes.subarray(bytes.length - IEND_CHUNK.length).equals(IEND_CHUNK)) reject('closing IEND chunk is malformed');
-
-const width = bytes.readUInt32BE(16);
-const height = bytes.readUInt32BE(20);
-const bitDepth = bytes[24];
-const colorType = bytes[25];
-if (width === 0 || height === 0) reject('IHDR reports a zero-width or zero-height image');
-if (width > MAX_EDGE_PX || height > MAX_EDGE_PX) reject(`${width}x${height} exceeds the ${MAX_EDGE_PX}x${MAX_EDGE_PX} gate limit`);
+const png = validatePng(bytes);
 
 console.log(`checked ${source.pathname}`);
 console.log(`  signature : PNG ok (89 50 4E 47 0D 0A 1A 0A)`);
 console.log(`  size      : ${bytes.length} bytes (limit ${MAX_FILE_BYTES})`);
-console.log(`  pixels    : ${width} x ${height} (limit ${MAX_EDGE_PX} x ${MAX_EDGE_PX}), depth ${bitDepth}, colour type ${colorType}`);
-console.log(`  chunks    : ${chunks.length}, opening IHDR, closing IEND — file is whole`);
+console.log(`  pixels    : ${png.width} x ${png.height} (limit ${MAX_EDGE_PX} x ${MAX_EDGE_PX}), depth ${png.bitDepth}, colour type ${png.colorType}`);
+console.log(`  chunks    : ${png.chunkCount}, opening IHDR, closing IEND — file is whole`);
 
 // --- copy: the validated buffer, untouched, into the output directory -----
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
